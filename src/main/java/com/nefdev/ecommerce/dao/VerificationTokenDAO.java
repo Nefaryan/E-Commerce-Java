@@ -5,6 +5,7 @@ import com.nefdev.ecommerce.model.VerificationToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -13,4 +14,6 @@ public interface VerificationTokenDAO extends JpaRepository<VerificationToken,Lo
     Optional<VerificationToken> findByToken(String token);
 
     void deleteByUser(User user);
+
+    List<VerificationToken> findByUser_IdOrderByIdDesc(Long id);
 }
