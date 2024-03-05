@@ -8,30 +8,35 @@ import org.springframework.security.web.access.intercept.AuthorizationFilter;
 
 @Configuration
 public class WebSecurityConfig {
+        private JWTRequestFilter jwtRequestFilter;
 
-    private JWTRequestFilter jwtRequestFilter;
+        public WebSecurityConfig(JWTRequestFilter jwtRequestFilter) {
+            this.jwtRequestFilter = jwtRequestFilter;
+        }
 
-    public WebSecurityConfig(JWTRequestFilter jwtRequestFilter) {
-        this.jwtRequestFilter = jwtRequestFilter;
-    }
+        /**
+         * Configura la catena dei filtri per la sicurezza.
+         * @param http L'oggetto di sicurezza.
+         * @return La catena costruita.
+         * @throws Exception Lanciata in caso di errore nella configurazione.
+         */
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+            // Disabilita CSRF e CORS
+            http.csrf().disable().cors().disable();
 
-    /**
-     * Filter chain to configure security.
-     * @param http The security object.
-     * @return The chain built.
-     * @throws Exception Thrown on error configuring.
-     */
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable().cors().disable();
-        // We need to make sure our authentication filter is run before the http request filter is run.
-        http.addFilterBefore(jwtRequestFilter, AuthorizationFilter.class);
-        http.authorizeHttpRequests()
-                // Specific exclusions or rules.
-                .requestMatchers("/product", "/auth/register", "/auth/login", "/auth/verify").permitAll()
-                // Everything else should be authenticated.
-                .anyRequest().authenticated();
-        return http.build();
-    }
+            // Assicura che il filtro di autenticazione venga eseguito prima del filtro di richiesta HTTP
+            http.addFilterBefore(jwtRequestFilter, AuthorizationFilter.class);
+
+            // Configura le autorizzazioni delle richieste HTTP
+            http.authorizeHttpRequests()
+                    // Permette l'accesso pubblico a endpoint specifici
+                    .requestMatchers("/product", "/auth/register", "/auth/login", "/auth/verify").permitAll()
+                    // Richiede l'autenticazione per tutte le altre richieste
+                    .anyRequest().authenticated();
+
+            // Restituisce la catena di filtri costruita
+            return http.build();
+        }
 
 }
